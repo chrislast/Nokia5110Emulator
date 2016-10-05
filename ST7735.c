@@ -3,6 +3,7 @@
 //
 //  Code written for TM4C123GH6PM using LCD pin configuration of 
 //  BOOSTXL-EDUMKII (using Launchpad SSI2 for ST7735 LCD)
+//  https://github.com/chrislast/Nokia5110Emulator
 //
 //  Description:
 //  This source file could be used as the basis for a standalone driver for the
