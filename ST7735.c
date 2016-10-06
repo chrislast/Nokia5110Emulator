@@ -108,7 +108,12 @@ void Initialize_Launchpad(void);
 // be incremented after each transmission.
 #define NOKIA_MAX_X                   84
 #define NOKIA_MAX_Y                   48
-
+#ifndef SCREENW
+  #define SCREENW NOKIA_MAX_X
+#endif
+#ifndef SCREENH
+  #define SCREENH NOKIA_MAX_Y
+#endif
 // Maximum dimensions of the ST7735, although the pixels are
 // numbered from zero to (MAX-1).  Address may automatically
 // be incremented after each transmission.
