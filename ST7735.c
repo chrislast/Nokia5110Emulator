@@ -60,9 +60,19 @@
 //============================================================================
 
 #include <stdint.h>
-#include "Nokia5110.h"
 #include "../inc/tm4c123gh6pm.h"
 
+// Declare the original Nokia5110 functions which are being emulated
+void Nokia5110_Init(void);
+void Nokia5110_OutChar(unsigned char data);
+void Nokia5110_OutString(char *ptr);
+void Nokia5110_OutUDec(unsigned short n);
+void Nokia5110_SetCursor(unsigned char newX, unsigned char newY);
+void Nokia5110_Clear(void);
+void Nokia5110_DrawFullImage(const char *ptr);
+void Nokia5110_PrintBMP(unsigned char xpos, unsigned char ypos, const unsigned char *ptr, unsigned char threshold);
+void Nokia5110_ClearBuffer(void);
+void Nokia5110_DisplayBuffer(void);
 // Declare the Emulator Nokia5110 replacement functions 
 void Nokia5110Emu_Init(void);
 void Nokia5110Emu_OutChar(unsigned char data);
@@ -238,6 +248,7 @@ static uint8_t LCD_window_x;
 static uint8_t LCD_window_width;
 static uint8_t LCD_window_y;
 static uint8_t LCD_window_height;
+static uint8_t char_spacing;
 
 // Declare the Global screen buffer originally defined in Nokia 5110.c
 char Screen[SCREENW*SCREENH/8]; // buffer stores the next image to be printed on the screen
@@ -903,12 +914,14 @@ void Nokia5110Emu_Init(void)
   }
 	
 	// Display Emulator label
-	LCD_cursor_x = (ST7735_MAX_X-12*CHAR_WIDTH)/2; // Centre 12 chars of label1
+	char_spacing=0;  // Gaps between text look bad outside emulator window
+	LCD_cursor_x = (ST7735_MAX_X-12*(CHAR_WIDTH+char_spacing))/2; // Centre 12 chars of label1
 	LCD_cursor_y = (ST7735_MAX_Y-NOKIA_MAX_Y)/2-3*CHAR_HEIGHT; // 3 rows above emulator window
 	Nokia5110Emu_OutString(label1);
-	LCD_cursor_x = (ST7735_MAX_X-10*CHAR_WIDTH)/2; // Centre 10 chars of label2
+	LCD_cursor_x = (ST7735_MAX_X-10*(CHAR_WIDTH+char_spacing))/2; // Centre 10 chars of label2
 	LCD_cursor_y = (ST7735_MAX_Y-NOKIA_MAX_Y)/2-2*CHAR_HEIGHT; // 2 rows above emulator window
 	Nokia5110Emu_OutString(label2);
+	char_spacing=1; // Gaps between text maintain backward compatibilty inside emulator window
 
 	// Initialise the Nokia 5110 emulator window
   Nokia5110Emu_Clear();
@@ -944,8 +957,8 @@ void Nokia5110Emu_OutChar(unsigned char data)
 	LCD_window_width = width;
 
 	// Advance the text cursor to the next character position
-	LCD_cursor_x += CHAR_WIDTH;
-	if ( LCD_cursor_x + CHAR_WIDTH > LCD_window_width )
+	LCD_cursor_x += CHAR_WIDTH+char_spacing;
+	if ( LCD_cursor_x + CHAR_WIDTH+char_spacing > LCD_window_width )
 	{
 		LCD_cursor_x = 0;
 		LCD_cursor_y += CHAR_HEIGHT;
@@ -964,7 +977,7 @@ void Nokia5110Emu_OutChar(unsigned char data)
 void Nokia5110Emu_SetCursor(unsigned char newX, unsigned char newY)
 {
 	if ( newX * CHAR_WIDTH + CHAR_WIDTH <= NOKIA_MAX_X )
-		LCD_cursor_x = newX*CHAR_WIDTH;
+		LCD_cursor_x = newX*(CHAR_WIDTH+char_spacing);
 	if ( newY * CHAR_HEIGHT + CHAR_HEIGHT <= NOKIA_MAX_Y )
 		LCD_cursor_y = newY*CHAR_HEIGHT;
 }
